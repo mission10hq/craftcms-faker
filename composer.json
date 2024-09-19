@@ -1,5 +1,5 @@
 {
-    "name": "jordanbeattie/craftcms-faker",
+    "name": "mission10/craftcms-faker",
     "description": "Fake entry fields for CraftCMS",
     "type": "craft-plugin",
     "keywords": [
@@ -14,19 +14,19 @@
     },
     "autoload": {
         "psr-4": {
-            "Jordanbeattie\\CraftcmsFaker\\": "src/"
+            "Mission10\\CraftcmsFaker\\": "src/"
         }
     },
     "authors": [
         {
-            "name": "Jordan Beattie",
-            "email": "jordan@jordanbeattie.com"
+            "name": "Mission10",
+            "email": "cameron@mission10.co.uk"
         }
     ],
     "extra": {
         "name": "Faker",
         "handle": "faker",
-        "class": "Jordanbeattie\\CraftcmsFaker\\Faker"
+        "class": "Mission10\\CraftcmsFaker\\Faker"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
