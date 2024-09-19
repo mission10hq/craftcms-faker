@@ -1,6 +1,6 @@
 <?php
 
-namespace Jordanbeattie\CraftcmsFaker\models\cms;
+namespace Mission10\CraftcmsFaker\models\cms;
 
 use craft\base\Model;
 use craft\helpers\App;

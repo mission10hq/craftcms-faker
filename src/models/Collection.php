@@ -1,6 +1,6 @@
 <?php
 
-namespace Jordanbeattie\CraftcmsFaker\models;
+namespace Mission10\CraftcmsFaker\models;
 use Countable;
 use craft\base\Model;
 

@@ -1,7 +1,7 @@
 <?php
 
-namespace Jordanbeattie\CraftcmsFaker\models;
-use Jordanbeattie\CraftcmsFaker\models\Collection;
+namespace Mission10\CraftcmsFaker\models;
+use Mission10\CraftcmsFaker\models\Collection;
 
 class Link extends Collection
 {

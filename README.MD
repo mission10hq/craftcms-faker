@@ -7,7 +7,7 @@ For example, if you're passing an image to a template, you can access the attrib
 ## Installation
 To install the plugin, require it as a composer dependancy as follows: 
 ```
-composer require jordanbeattie/craftcms-faker
+composer require Mission10/craftcms-faker
 ```
 
 You can then install the plugin via the plugins section of Craft or by running the following command. 

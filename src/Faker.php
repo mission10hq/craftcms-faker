@@ -1,10 +1,10 @@
 <?php
 
-namespace Jordanbeattie\CraftcmsFaker;
+namespace Mission10\CraftcmsFaker;
 use \craft\web\twig\variables\CraftVariable;
 use craft\base\Model;
-use Jordanbeattie\CraftcmsFaker\models\cms\Settings;
-use Jordanbeattie\CraftcmsFaker\variables\FakerVariable;
+use Mission10\CraftcmsFaker\models\cms\Settings;
+use Mission10\CraftcmsFaker\variables\FakerVariable;
 use yii\base\Event;
 
 class Faker extends \craft\base\Plugin

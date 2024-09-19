@@ -1,9 +1,9 @@
 <?php
 
-namespace Jordanbeattie\CraftcmsFaker\models;
+namespace Mission10\CraftcmsFaker\models;
 use DateTime;
-use Jordanbeattie\CraftcmsFaker\models\Asset;
-use Jordanbeattie\CraftcmsFaker\models\Collection;
+use Mission10\CraftcmsFaker\models\Asset;
+use Mission10\CraftcmsFaker\models\Collection;
 
 class Entry extends Collection
 {

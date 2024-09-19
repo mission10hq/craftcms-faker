@@ -1,15 +1,15 @@
 <?php
 
-namespace Jordanbeattie\CraftcmsFaker\variables;
+namespace Mission10\CraftcmsFaker\variables;
 use Craft;
-use Jordanbeattie\CraftcmsFaker\Faker;
-use Jordanbeattie\CraftcmsFaker\models\Asset;
-use Jordanbeattie\CraftcmsFaker\models\Collection;
-use Jordanbeattie\CraftcmsFaker\models\DonkeyTail;
-use Jordanbeattie\CraftcmsFaker\models\Entry;
-use Jordanbeattie\CraftcmsFaker\models\Icon;
-use Jordanbeattie\CraftcmsFaker\models\Link;
-use Jordanbeattie\CraftcmsFaker\models\SuperTable;
+use Mission10\CraftcmsFaker\Faker;
+use Mission10\CraftcmsFaker\models\Asset;
+use Mission10\CraftcmsFaker\models\Collection;
+use Mission10\CraftcmsFaker\models\DonkeyTail;
+use Mission10\CraftcmsFaker\models\Entry;
+use Mission10\CraftcmsFaker\models\Icon;
+use Mission10\CraftcmsFaker\models\Link;
+use Mission10\CraftcmsFaker\models\SuperTable;
 
 Class FakerVariable
 {
