@@ -24,6 +24,11 @@ class Link extends Collection
     {
         return $this->text;
     }
+    
+    public function label()
+    {
+        return $this->text;
+    }
 
     public function target()
     {
