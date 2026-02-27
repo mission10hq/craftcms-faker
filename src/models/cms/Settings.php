@@ -20,9 +20,17 @@ class Settings extends Model
         $width = $width ?? "200";
         $height = $height ?? "200";
         $source = ($source ?? $this->getSource());
-        $source = (in_array($source, ['picsum', 'placeholder', 'unsplash', 'dummyImage']) ? $source : "picsum");
+        $source = (in_array($source, ['picsum', 'placeholder', 'unsplash', 'dummyImage', 'local']) ? $source : "picsum");
 
-        if( $source == "unsplash" )
+        if( $source == "local" )
+        {
+            $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' . $width . '" height="' . $height . '" viewBox="0 0 ' . $width . ' ' . $height . '">'
+                . '<rect fill="#e5e7eb" width="' . $width . '" height="' . $height . '"/>'
+                . '<text fill="#9ca3af" font-family="system-ui,sans-serif" font-size="14" text-anchor="middle" x="' . ($width / 2) . '" y="' . ($height / 2 + 5) . '">' . $width . ' x ' . $height . '</text>'
+                . '</svg>';
+            return 'data:image/svg+xml,' . rawurlencode($svg);
+        }
+        elseif( $source == "unsplash" )
         {
             $url = "https://source.unsplash.com/";
             $url .= $id ?? "random";

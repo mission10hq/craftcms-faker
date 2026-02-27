@@ -32,7 +32,10 @@ Class FakerVariable
         $alt = $attributes['alt'] ?? $title;
         $customFields = $attributes['customFields'] ?? [];
 
-        return new Asset($url, $title, $alt, $kind, $customFields);
+        $width = $attributes['width'] ?? null;
+        $height = $attributes['height'] ?? null;
+
+        return new Asset($url, $title, $alt, $kind, $customFields, $width, $height);
     }
 
     public function collection( $items = null )
