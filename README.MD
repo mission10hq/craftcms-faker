@@ -1,186 +1,340 @@
 # Craft CMS Faker
 
-Craft CMS Faker provides a handful of models that you can create an instance of in your Twig code to "fake" various components of Craft CMS. 
+Craft CMS Faker provides fake/mock models for Twig template development. It lets you prototype templates without needing real CMS data by creating fake entries, assets, collections, and third-party field types.
 
-For example, if you're passing an image to a template, you can access the attributes of the "fake" image just as you would with an Asset from Craft CMS.
+All fake models are accessed via `craft.faker.*` in your Twig templates.
 
 ## Installation
-To install the plugin, require it as a composer dependancy as follows: 
+
+Require the plugin via Composer:
 ```
-composer require Mission10/craftcms-faker
+composer require mission10/craftcms-faker
 ```
 
-You can then install the plugin via the plugins section of Craft or by running the following command. 
+Then install it via the Craft control panel or the CLI:
 ```
 php craft plugin/install faker
 ```
 
-## Usage 
+## Usage
 
 ### Entry
-Designed to fake a CMS entry, the Entry model can accept any attributes and be assigned to the returned model.
-To access the attributes passed in, use the `get()` function.
-```
-craft.faker.entry({
-    title: "My entry", 
+
+Designed to fake a CMS entry, the Entry model accepts any attributes and returns them on the model. Use the `get()` method to access the attributes as an object.
+
+If not provided, the model automatically assigns default values for `title`, `url`, `slug`, and `postDate`.
+
+```twig
+{% set entry = craft.faker.entry({
+    title: "My entry",
     myCustomField: "My custom field value"
-}).get();
+}).get() %}
+
+{{ entry.title }}
+{{ entry.myCustomField }}
 ```
 
 ### Collection
-A collection allows you to run the functions `all()`, `nth()` and `first()` on any array. Helpful for looping in your Twig templates
+
+A Collection wraps an array and provides query-like methods for looping in Twig templates. It implements `Countable`, so you can use `|length` in Twig.
+
+```twig
+{% set items = craft.faker.collection([
+    "my first item",
+    "my second item",
+    "my third item"
+]) %}
 ```
-craft.faker.collection([
-    "my first item", 
-    "my second item"
-])
+
+#### Methods
+
+| Method | Description |
+|---|---|
+| `all()` | Returns the underlying array of items |
+| `one()` | Returns the first item |
+| `first()` | Returns the first item |
+| `nth(n)` | Returns the item at index `n` |
+| `limit(n)` | Returns a new Collection with only the first `n` items |
+| `offset(n)` | Returns a new Collection skipping the first `n` items |
+| `count()` | Returns the number of items |
+| `add(item)` | Appends an item (or array of items) and returns the Collection |
+
+```twig
+{% for item in items.limit(2).all() %}
+    {{ item }}
+{% endfor %}
+
+{{ items.count() }}
+{{ items.first() }}
 ```
 
 ### Asset
-Designed to mimic an asset from Craft's asset volumes, this can be used in many different ways. 
 
-#### Available attributes
-- url
-- title
-- alt
-- kind
-- source
-- width 
-- height
-- text
-- id
-- query
+Designed to mimic an asset from Craft's asset volumes. Supports both images and videos.
 
-#### Sources
-You can select a source to be used when generating default images. You can choose [Lorem Picsum](https://picsum.photos) _(default)_, [Placeholder](https://placeholder.com) or [Unsplash](https_://unsplash.com/). 
+#### Attributes
 
-This can either be selected in the CMS Settings and can be set to a ENV variable. 
+| Attribute | Default | Description |
+|---|---|---|
+| `url` | Auto-generated from source | The asset URL |
+| `title` | `"Default asset title"` | The asset title |
+| `alt` | Same as title | Alt text |
+| `kind` | `"image"` | `"image"` or `"video"` |
+| `source` | Plugin setting | Image source provider |
+| `width` | `200` | Width in pixels |
+| `height` | `200` | Height in pixels |
+| `id` | — | Unsplash image ID |
+| `query` | — | Unsplash search query |
+| `text` | — | Placeholder text (for placeholder/dummyimage sources) |
+| `customFields` | `[]` | Key-value pairs accessible as properties |
 
-You can also overwrite this setting per image by passing the `source` attribute with either `picsum`, `placeholder` or `unsplash` as the value. 
+#### Image Sources
 
-#### Default URL
-If no URl is passed to the function, a URL will be created for you using your selected source (see above). 
-If you want an image generated automatically, simply do not include the URL attribute, instead you can optionally pass a height and width. 
+You can select a default image source in the plugin's CP settings (supports environment variables). Available sources:
 
-#### Sizing
-You can pass `width` and `height` if you require. This is useful for passing images that are later transformed. Both will default to 200. 
+- **[Lorem Picsum](https://picsum.photos)** _(default)_ — Random photos
+- **[Placeholder / DummyImage](https://dummyimage.com)** — Solid color placeholders with text
+- **[Unsplash](https://unsplash.com)** — High-quality photos (supports `id` and `query`)
+- **Local** — Inline SVG placeholder (no external requests)
 
-#### ID
-When using `unsplash`, you can pass an id to select a specific image.
+Override the source per-asset by passing the `source` attribute.
 
-#### Query
-When using `unsplash`, you can pass a query string to retrieve images related to the query.
+#### Video Support
 
-#### Example
+Set `kind` to `"video"` to get a fake video asset. When no `url` is provided, a sample video URL is generated automatically.
 
+```twig
+{% set video = craft.faker.asset({
+    kind: "video"
+}) %}
+
+<video src="{{ video.url }}"></video>
 ```
-craft.faker.asset({
-    url: "my-image-url", 
-    title: "Fake image", 
-    alt: "My fake image", 
-    kind: "image"
-})
 
-craft.faker.asset({
-    source: "placeholder"
-    width: 1080, 
+#### Methods
+
+| Method | Description |
+|---|---|
+| `url()` | Returns the asset URL |
+| `getUrl()` | Alias of `url()` |
+| `width()` | Returns the width |
+| `height()` | Returns the height |
+| `setTransform(attrs)` | Sets `width`/`height` from an attribute hash; returns `self` for chaining |
+| `getSrcset(sizes)` | Generates a srcset string from an array of widths |
+
+#### Custom Fields
+
+Pass a `customFields` hash to add arbitrary properties to the asset, accessible via standard Twig property syntax:
+
+```twig
+{% set image = craft.faker.asset({
+    title: "Hero image",
+    customFields: {
+        caption: "Photo by Example",
+        photographer: "Jane Doe"
+    }
+}) %}
+
+{{ image.caption }}
+{{ image.photographer }}
+```
+
+#### Examples
+
+```twig
+{# Auto-generated image from default source #}
+{% set image = craft.faker.asset() %}
+
+{# Custom URL and attributes #}
+{% set image = craft.faker.asset({
+    url: "my-image-url",
+    title: "Fake image",
+    alt: "My fake image",
+    kind: "image"
+}) %}
+
+{# Placeholder source with custom dimensions #}
+{% set image = craft.faker.asset({
+    source: "placeholder",
+    width: 1080,
     height: 720
-})
+}) %}
+
+{# Using setTransform and getSrcset #}
+{% set image = craft.faker.asset({ width: 800, height: 600 }) %}
+{% set transformed = image.setTransform({ width: 400, height: 300 }) %}
+<img src="{{ image.url }}" srcset="{{ image.getSrcset([400, 800, 1200]) }}">
+```
+
+### Link
+
+Designed to mimic a link field (e.g., Ether's Typed Link Field or the native Craft CMS link field). Provides methods compatible with common link field APIs.
+
+#### Attributes
+
+| Attribute | Default | Description |
+|---|---|---|
+| `url` | `"#"` | The link URL |
+| `text` | `"Learn more"` | The link text |
+| `target` | `null` | Target attribute (e.g., `"_blank"`) |
+
+#### Methods
+
+| Method | Description |
+|---|---|
+| `url()` / `getUrl()` | Returns the URL |
+| `text()` / `getText()` | Returns the link text |
+| `label()` | Alias of `text()` |
+| `target()` / `getTarget()` | Returns the target, or `false` if none |
+| `isEmpty()` | Always returns `false` |
+| `getLinkAttributes(extraAttributes)` | Returns an HTML attribute string (`href="..."`, optional `target`, plus any extra attributes) |
+
+#### Examples
+
+```twig
+{% set link = craft.faker.link({
+    url: "/about",
+    text: "About Us",
+    target: "_blank"
+}) %}
+
+<a {{ link.getLinkAttributes() }}>{{ link.text }}</a>
+
+<a {{ link.getLinkAttributes({ class: "btn", "data-track": "cta" }) }}>{{ link.text }}</a>
+```
+
+### Icon
+
+Designed to mimic the [Icon Picker](https://verbb.io/craft-plugins/icon-picker/features) field type. Supports glyph, sprite, CSS, and SVG icon types.
+
+#### Parameters
+
+The `icon()` method accepts individual parameters:
+
+```twig
+craft.faker.icon(icon, sprite, glyphId, glyphName, iconSet, type, css, width, height)
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `icon` | `null` | SVG icon path |
+| `sprite` | `null` | Sprite reference |
+| `glyphId` | `"59389"` | Glyph decimal ID |
+| `glyphName` | `"unie7fd"` | Glyph name |
+| `iconSet` | `"MaterialIconsSharp"` | Icon set name |
+| `type` | `"glyph"` | One of: `glyph`, `sprite`, `css`, `svg` |
+| `css` | `null` | CSS class name |
+| `width` | `null` | Icon width |
+| `height` | `null` | Icon height |
+
+#### Examples
+
+```twig
+{# Default glyph icon #}
+{% set icon = craft.faker.icon() %}
+{{ icon.glyphName }}
+{{ icon.getGlyph() }}
+
+{# Sprite icon #}
+{% set icon = craft.faker.icon(null, "my-sprite", null, null, null, "sprite") %}
+
+{# CSS icon #}
+{% set icon = craft.faker.icon(null, null, null, null, "FontAwesome", "css", "fa-home") %}
 ```
 
 ### Super Table
-Designed to mimic [Super Table](https://verbb.io/craft-plugins/super-table/features), this is identical to using Collections. Simply pass in an array of data to access. 
-Each array item should be wrapped in curly brackets to mimic a row. 
 
-```
-craft.faker.superTable([
+Designed to mimic [Super Table](https://verbb.io/craft-plugins/super-table/features). Identical to using a Collection — pass in an array of row objects.
+
+```twig
+{% set table = craft.faker.superTable([
     {
-        myColumnName: "my first columns data", 
-        mySecondColumnName: "my second columns data", 
+        myColumnName: "my first row data",
+        mySecondColumnName: "my second column data",
     },
     {
-        myColumnName: "my first columns data", 
-        mySecondColumnName: "my second columns data", 
+        myColumnName: "my second row data",
+        mySecondColumnName: "my second column data",
     },
-])
+]) %}
+
+{% for row in table.all() %}
+    {{ row.myColumnName }}
+{% endfor %}
 ```
 
 ### Donkey Tail
-Designed to replicate [Donkey Tail](https://simplygoodwork.com/blog/donkeytail-use-cases-for-craft-cms), you can use this to replicate a DonkeyTail field and pass in your image and pins.
 
-#### Available attributes
-- Image
-- Pins
+Designed to replicate [Donkey Tail](https://simplygoodwork.com/blog/donkeytail-use-cases-for-craft-cms). Extends Asset, adding pin support for hotspots on images.
 
-```
-craft.faker.donkeytail({
-    image: yourAssetField, 
+#### Attributes
+
+| Attribute | Default | Description |
+|---|---|---|
+| `url` | `"https://picsum.photos/200"` | The image URL |
+| `pins` | `[]` | Array of pin objects with `x`, `y`, and `element` |
+
+```twig
+{% set hotspot = craft.faker.donkeytail({
+    image: craft.faker.asset(),
     pins: [
         {
-            x: 10, 
-            y: 10, 
-            element: yourElementField
-        }
-    ]
-})
-```
-
-Each of the functions can be combined and used within each other. For example, if you had a collection of assets:
-
-```
-craft.faker.collection([
-    craft.faker.asset(),
-    craft.faker.asset(),
-    craft.faker.asset()
-])
-```
-
-or if you had an asset within a Super Table field
-
-```
-craft.faker.superTable([
-    {
-        image: craft.faker.asset()
-    }
-])
-```
-
-You can even fake entries and assets within a Donkey Tail field. 
-
-```
-craft.faker.donkeytail({
-    image: craft.faker.asset(), 
-    pins: [
-        {
-            x: 10, 
-            y:10, 
+            x: 10,
+            y: 10,
             element: craft.faker.entry()
         }
     ]
-})
+}) %}
 ```
-
-If not provided in the attributes, the model will automatically assign a title, URL, slug and postDate.
-
 
 ### Navigation
-Designed to mimic [Verbb's navigation plugin](https://verbb.io/craft-plugins/navigation/features), the navigation function will accept an integer for the total amount of items to return and will provide a Collection of items, each with: 
-- url
-- title
-- active
-- newWindow
-- customAttributes
-- hasDescendants
-- children
 
-If you would like to return multi-level navigation, you can add a `true` second parameter. This currently only supports two levels.
+Designed to mimic [Verbb's Navigation plugin](https://verbb.io/craft-plugins/navigation/features). Accepts a total number of items and returns a Collection of navigation items.
 
+Each item includes: `url`, `title`, `active`, `newWindow`, `customAttributes`, and optionally `hasDescendants` and `children`.
+
+Pass `true` as the second parameter for two-level navigation.
+
+```twig
+{# Single-level navigation #}
+{% set nav = craft.faker.navigation(4) %}
+
+{# Two-level navigation #}
+{% set nav = craft.faker.navigation(4, true) %}
+
+{% for item in nav.all() %}
+    <a href="{{ item.url }}">{{ item.title }}</a>
+    {% if item.children is defined %}
+        {% for child in item.children %}
+            <a href="{{ child.url }}">{{ child.title }}</a>
+        {% endfor %}
+    {% endif %}
+{% endfor %}
 ```
-craft.faker.navigation(4)
-craft.faker.navigation(4, true)
-```
 
-## Contact 
-Jordan Beattie <br>
-jordan@mission10.co.uk <br>
-Aberdeen, Scotland
+## Composing Models
+
+All fake models are composable — you can nest them inside each other:
+
+```twig
+{# A collection of assets #}
+{% set gallery = craft.faker.collection([
+    craft.faker.asset(),
+    craft.faker.asset(),
+    craft.faker.asset()
+]) %}
+
+{# Assets inside a Super Table #}
+{% set table = craft.faker.superTable([
+    { image: craft.faker.asset() },
+    { image: craft.faker.asset() }
+]) %}
+
+{# Entries and assets inside a Donkey Tail field #}
+{% set hotspot = craft.faker.donkeytail({
+    image: craft.faker.asset(),
+    pins: [
+        { x: 10, y: 10, element: craft.faker.entry() }
+    ]
+}) %}
+```
