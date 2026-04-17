@@ -1,0 +1,106 @@
+{##
+ # Zero-dependency Twig macros that replace the craftcms-faker plugin.
+ # Returns plain hashes instead of objects — use Twig filters (|first, |slice) for list operations.
+ #
+ # Usage:
+ #   {% import '_macros/faker' as faker %}
+ #   {% set entry = faker.entry({ title: "My Post" }) %}
+ #   {% set image = faker.asset({ width: 1080, height: 720 }) %}
+ #}
+
+{% macro entry(attrs) %}
+    {%- set defaults = {
+        title: 'Fake entry',
+        slug: 'fake-entry',
+        url: '#',
+        postDate: now|date('Y-m-d H:i:s'),
+    } -%}
+    {%- set result = defaults|merge(attrs ?? {}) -%}
+    {{ result }}
+{% endmacro %}
+
+{% macro asset(attrs) %}
+    {%- set w = attrs.width ?? 200 -%}
+    {%- set h = attrs.height ?? 200 -%}
+    {%- set source = attrs.source ?? 'picsum' -%}
+
+    {%- if attrs.url is defined -%}
+        {%- set imageUrl = attrs.url -%}
+    {%- elseif source == 'local' -%}
+        {%- set imageUrl = 'data:image/svg+xml,' ~ ('<svg xmlns="http://www.w3.org/2000/svg" width="' ~ w ~ '" height="' ~ h ~ '" viewBox="0 0 ' ~ w ~ ' ' ~ h ~ '"><rect fill="#e5e7eb" width="' ~ w ~ '" height="' ~ h ~ '"/><text fill="#9ca3af" font-family="system-ui,sans-serif" font-size="14" text-anchor="middle" x="' ~ (w / 2) ~ '" y="' ~ (h / 2 + 5) ~ '">' ~ w ~ ' x ' ~ h ~ '</text></svg>')|url_encode -%}
+    {%- elseif source == 'unsplash' -%}
+        {%- set imageUrl = 'https://source.unsplash.com/' ~ (attrs.id ?? 'random') ~ '/' ~ w ~ 'x' ~ h ~ '/' -%}
+        {%- if attrs.query is defined -%}
+            {%- set imageUrl = imageUrl ~ '?' ~ attrs.query -%}
+        {%- endif -%}
+    {%- elseif source == 'placeholder' or source == 'dummyImage' -%}
+        {%- set imageUrl = 'https://dummyimage.com/' ~ w ~ 'x' ~ h ~ '/bdbdbd/f5f5f5?text=' ~ (attrs.text ?? (w ~ ' x ' ~ h)) -%}
+    {%- else -%}
+        {%- set imageUrl = 'https://picsum.photos/' ~ w ~ '/' ~ h -%}
+    {%- endif -%}
+
+    {%- set result = {
+        url: imageUrl,
+        title: attrs.title ?? 'Default asset title',
+        alt: attrs.alt ?? (attrs.title ?? 'Default asset title'),
+        kind: attrs.kind ?? 'image',
+        extension: 'png',
+        mimeType: 'image/png',
+        width: w,
+        height: h,
+    } -%}
+    {{ result }}
+{% endmacro %}
+
+{% macro link(attrs) %}
+    {%- set result = {
+        url: attrs.url ?? '#',
+        text: attrs.text ?? 'Learn more',
+        target: attrs.target ?? null,
+    } -%}
+    {{ result }}
+{% endmacro %}
+
+{% macro navigation(total, withChildren) %}
+    {%- set items = [] -%}
+    {%- for i in 1..total -%}
+        {%- set item = {
+            url: '#page-' ~ i,
+            title: 'Page ' ~ i,
+            active: loop.first,
+            newWindow: false,
+            customAttributes: [],
+            hasDescendants: withChildren ?? false,
+        } -%}
+        {%- if withChildren -%}
+            {%- set kids = [] -%}
+            {%- for j in 1..random(2, 4) -%}
+                {%- set kids = kids|merge([{
+                    url: '#child-' ~ j,
+                    title: 'Child ' ~ j,
+                    active: (loop.parent.loop.first and loop.first),
+                    newWindow: false,
+                    customAttributes: [],
+                }]) -%}
+            {%- endfor -%}
+            {%- set item = item|merge({ children: kids }) -%}
+        {%- endif -%}
+        {%- set items = items|merge([item]) -%}
+    {%- endfor -%}
+    {{ items }}
+{% endmacro %}
+
+{% macro icon(attrs) %}
+    {%- set result = {
+        icon: attrs.icon ?? null,
+        sprite: attrs.sprite ?? null,
+        glyphId: attrs.glyphId ?? '59389',
+        glyphName: attrs.glyphName ?? 'unie7fd',
+        iconSet: attrs.iconSet ?? 'MaterialIconsSharp',
+        type: attrs.type ?? 'glyph',
+        css: attrs.css ?? null,
+        width: attrs.width ?? null,
+        height: attrs.height ?? null,
+    } -%}
+    {{ result }}
+{% endmacro %}
