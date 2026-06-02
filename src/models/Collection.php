@@ -91,4 +91,11 @@ class Collection extends Model implements Countable
         return $this;
     }
 
+    // Chainable no-op so faker collections mimic ElementQuery::with() and
+    // templates can call .with([...]) for eager-loading without erroring.
+    public function with( $value = null )
+    {
+        return $this;
+    }
+
 }
